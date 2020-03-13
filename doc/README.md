@@ -8,6 +8,7 @@
 - errichto
 - [Reinforcement learning]("https://medium.com/emergent-future/simple-reinforcement-learning-with-tensorflow-part-0-q-learning-with-tables-and-neural-networks-d195264329d0")
 - [Q-learning VS policy leanring]("https://flyyufelix.github.io/2017/10/12/dqn-vs-pg.html")
+- [MIT Courses on deep learning]("http://introtodeeplearning.com/")
 
 ### Gits
 - [VizDoom]("https://github.com/flyyufelix/VizDoom-Keras-RL")
