@@ -11,6 +11,7 @@
 
 ### Gits
 - [VizDoom]("https://github.com/flyyufelix/VizDoom-Keras-RL")
+- [TF-agents]("https://github.com/tensorflow/agents")
 
 ## simple tensorflow example program
 https://www.tensorflow.org/tutorials/keras/classification
