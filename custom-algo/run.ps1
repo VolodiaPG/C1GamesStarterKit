@@ -1,4 +1,4 @@
 $scriptPath = Split-Path -parent $PSCommandPath;
-$algoPath = "$scriptPath\custom_algo.py"
+$algoPath = "$scriptPath\algo_strategy.py"
 
 py -3 $algoPath

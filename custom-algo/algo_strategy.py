@@ -60,7 +60,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         # game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
-        self.starter_strategy(game_state)
+        self.strategy(game_state)
 
         game_state.submit_turn()
 
@@ -70,7 +70,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     strategy and can safely be replaced for your custom algo.
     """
 
-    def starter_strategy(self, game_state):
+    def strategy(self, game_state):
         """
         For defense we will use a spread out layout and some Scramblers early on.
         We will place destructors near locations the opponent managed to score on.
