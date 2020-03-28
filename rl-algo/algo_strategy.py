@@ -5,6 +5,8 @@ import warnings
 from sys import maxsize
 import json
 
+import rl
+
 
 """
 Most of the algo code you write will be in this file unless you create new
@@ -60,7 +62,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
         # game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
-        self.strategy(game_state)
+        rl.treat(game_state)
+
+        # self.strategy(game_state)
 
         game_state.submit_turn()
 
