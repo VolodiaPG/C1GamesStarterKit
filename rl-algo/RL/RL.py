@@ -31,7 +31,7 @@ def choose_action(model, observation):
 
   return action
 
-  ### Agent Memory ###
+### Agent Memory ###
 
 class Memory:
   def __init__(self): 
