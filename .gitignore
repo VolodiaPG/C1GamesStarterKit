@@ -11,3 +11,5 @@ dist/*
 *.zip
 */.idea/*
 replays/
+
+*error*
