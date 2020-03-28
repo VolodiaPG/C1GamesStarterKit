@@ -1,4 +1,31 @@
-# Starter Algo
+# RL Algo
+
+## Strategy
+
+NN :
+
+```
+Board
+ │
+Conv2D
+ │
+Conv2D
+ │
+Conv2D
+ │
+Flatten
+ │
+ ├──Additionnal informations
+ │   ├──Cores
+ │   ├──Bits
+ │   ├──Health
+ │   ├──Cores on board
+ │   └── ...
+ │
+ Dense
+ │
+ Dense (final)
+```
 
 ## File Overview
 
