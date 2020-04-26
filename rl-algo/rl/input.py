@@ -6,4 +6,5 @@ sys.path.insert(0, parent_dir)
 import gamelib
 
 def treat(game_state):
-    gamelib.debug_write("toto")
+    game_state.game_map.
+    

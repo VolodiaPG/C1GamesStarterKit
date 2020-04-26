@@ -1,10 +1,12 @@
-#%tensorflow_version 2.x
+  #%tensorflow_version 2.x
 import tensorflow as tf
 
 import numpy as np
 import IPython, functools
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+
+n_actions = []
 
 ### Define the agent's action function ###
 
@@ -61,22 +63,6 @@ def normalize(x):
   x /= np.std(x)
   return x.astype(np.float32)
 
-# Compute normalized, discounted, cumulative rewards (i.e., return)
-# Arguments:
-#   rewards: reward at timesteps in episode
-#   gamma: discounting factor
-# Returns:
-#   normalized discounted reward
-def discount_rewards(rewards, gamma=0.95): 
-  discounted_rewards = np.zeros_like(rewards)
-  R = 0
-  for t in reversed(range(0, len(rewards))):
-      # update the total discounted reward
-      R = R * gamma + rewards[t]
-      discounted_rewards[t] = R
-      
-  return normalize(discounted_rewards)
-
 ### Loss function ###
 
 # Arguments:
@@ -108,16 +94,16 @@ def train_step(model, optimizer, observations, actions, discounted_rewards):
   grads = tape.gradient(loss, model.trainable_variables)
   optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
-  ### Define the Pong agent ###
+  ### Define the agent ###
 
-# Functionally define layers for convenience
-# All convolutional layers will have ReLu activation
-Conv2D = functools.partial(tf.keras.layers.Conv2D, padding='same', activation='relu')
-Flatten = tf.keras.layers.Flatten
-Dense = tf.keras.layers.Dense
+# Defines a CNN for the agent
+def create_model():
+  # Functionally define layers for convenience
+  # All convolutional layers will have ReLu activation
+  Conv2D = functools.partial(tf.keras.layers.Conv2D, padding='same', activation='relu')
+  Flatten = tf.keras.layers.Flatten
+  Dense = tf.keras.layers.Dense
 
-# Defines a CNN for the Pong agent
-def create_pong_model():
   model = tf.keras.models.Sequential([
     # Convolutional layers
     # First, 16 7x7 filters with 4x4 stride
@@ -140,8 +126,6 @@ def create_pong_model():
   ])
   return model
 
-pong_model = create_pong_model()
-
 ### Pong reward function ###
 
 # Compute normalized, discounted rewards for Pong (i.e., return)
@@ -162,3 +146,71 @@ def discount_rewards(rewards, gamma=0.99):
       discounted_rewards[t] = R
       
   return normalize(discounted_rewards)
+
+def change_differences(previous, current):
+  return 0
+
+def preprocess_board(board):
+  return 0
+
+def step(action):
+  return (0,0,0)
+
+### Training Pong ###
+
+# model = create_model()
+
+# Hyperparameters
+learning_rate=1e-4
+MAX_ITERS = 10000 # increase the maximum number of episodes, since Pong is more complex!
+
+# Model and optimizer
+game_model = create_model()
+optimizer = tf.keras.optimizers.Adam(learning_rate)
+
+# plotting
+# smoothed_reward = mdl.util.LossHistory(smoothing_factor=0.9)
+# plotter = mdl.util.PeriodicPlotter(sec=5, xlabel='Iterations', ylabel='Rewards')
+memory = Memory()
+
+for i_episode in range(MAX_ITERS):
+
+  # Restart the environment
+  observation = board
+  previous_preprocessed_board = preprocess_board(board)
+
+  while True:
+      # Pre-process image 
+      #TODO BOARD
+      current_preprocessed_board = preprocess_board(observation)
+      
+      ''' determine the observation change
+      Hint: this is the difference between the past two frames'''
+      obs_change = change_differences(current_preprocessed_board, previous_preprocessed_board)
+      
+      '''TODO: choose an action for the pong model, using the frame difference, and evaluate'''
+      action = choose_action(game_model, obs_change)
+      # Take the chosen action
+      next_board, reward, done, info = step(action)
+
+      '''TODO: save the observed frame difference, the action that was taken, and the resulting reward!'''
+      memory.add_to_memory(obs_change, action, reward)
+      
+      # is the episode over? did you crash or do so well that you're done?
+      if done:
+          # determine total reward and keep a record of this
+          total_reward = sum(memory.rewards)
+          # smoothed_reward.append( total_reward )
+
+          # begin training
+          train_step(game_model, 
+                     optimizer, 
+                     observations = np.stack(memory.observations, 0), 
+                     actions = np.array(memory.actions),
+                     discounted_rewards = discount_rewards(memory.rewards))
+          
+          memory.clear()
+          break
+
+      observation = next_board
+      previous_preprocessed_board = current_preprocessed_board
