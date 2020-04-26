@@ -192,7 +192,7 @@ for i_episode in range(MAX_ITERS):
       '''TODO: choose an action for the pong model, using the frame difference, and evaluate'''
       action = choose_action(game_model, obs_change)
       # Take the chosen action
-      next_board, reward, done, info = step(action)
+      next_board, reward, done = step(action)
 
       '''TODO: save the observed frame difference, the action that was taken, and the resulting reward!'''
       memory.add_to_memory(obs_change, action, reward)
