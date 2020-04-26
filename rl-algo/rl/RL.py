@@ -156,6 +156,9 @@ def preprocess_board(board):
 def step(action):
   return (0,0,0)
 
+def reset():
+  return 0
+
 ### Training Pong ###
 
 # model = create_model()
@@ -176,8 +179,8 @@ memory = Memory()
 for i_episode in range(MAX_ITERS):
 
   # Restart the environment
-  observation = board
-  previous_preprocessed_board = preprocess_board(board)
+  observation = reset()
+  previous_preprocessed_board = preprocess_board(observation)
 
   while True:
       # Pre-process image 
