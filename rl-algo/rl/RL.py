@@ -98,20 +98,20 @@ def train_step(model, optimizer, observations, actions, discounted_rewards):
 def create_model():
   # Functionally define layers for convenience
   # All convolutional layers will have ReLu activation
-  Conv2D = functools.partial(tf.keras.layers.Conv2D, padding='same', activation='relu')
+  Conv2D = tf.keras.layers.Conv2D
   Flatten = tf.keras.layers.Flatten
   Dense = tf.keras.layers.Dense
 
   model = tf.keras.models.Sequential([
     # Convolutional layers
     # First, 16 7x7 filters with 4x4 stride
-    Conv2D(filters=16, kernel_size=7, strides=4),
+    Conv2D(padding='same', activation='relu', filters=16, kernel_size=7, strides=4),
 
     # TODO: define convolutional layers with 32 5x5 filters and 2x2 stride
-    Conv2D(filters=32, kernel_size=5, strides=2),
+    Conv2D(padding='same', activation='relu', filters=32, kernel_size=5, strides=2),
 
     # TODO: define convolutional layers with 48 3x3 filters and 2x2 stride
-    Conv2D(filters=48, kernel_size=3, strides=2),
+    Conv2D(padding='same', activation='relu', filters=48, kernel_size=3, strides=2),
 
     Flatten(),
     
