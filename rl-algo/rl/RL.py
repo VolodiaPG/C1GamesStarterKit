@@ -2,9 +2,7 @@
 import tensorflow as tf
 
 import numpy as np
-import IPython, functools
 import matplotlib.pyplot as plt
-from tqdm import tqdm
 
 n_actions = []
 
