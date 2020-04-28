@@ -28,6 +28,11 @@ class AlgoStrategy(gamelib.AlgoCore):
         random.seed(seed)
         gamelib.debug_write('Random seed: {}'.format(seed))
 
+    def translate_vocabulary_to_internal(self, vocab):
+        switcher = {
+            
+        }
+
     def on_game_start(self, config):
         """ 
         Read in config and perform any initial setup here 
