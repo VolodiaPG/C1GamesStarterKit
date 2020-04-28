@@ -5,10 +5,19 @@ LOG_FMT = logging.Formatter('%(levelname)s '
                             '[%(filename)s:%(lineno)d] %(message)s',
                             '%Y-%m-%d %H:%M:%S')
 
-def run_single_game(process_command):
-    print("Start run a match")
+ALGO_PORT = 4242 # port to communicate with the game playing throught the java program
+IP_ALGO = "127.0.0.1"
+
+ALGO1 = "./run.sh"
+ALGO2 = "../../../../python-algo/run.sh"
+ENGINE = "../../../../engine.jar"
+COMMAND_SINGLE_GAME = f'java -jar  {ENGINE} work {ALGO1} {ALGO2}'
+
+def run_single_game(callback_when_finished):
+    logging.info("Start run a match")
+    
     p = subprocess.Popen(
-        process_command,
+        COMMAND_SINGLE_GAME,
         shell=True,
         stdout=sys.stdout,
         stderr=sys.stderr
@@ -16,14 +25,10 @@ def run_single_game(process_command):
     # daemon necessary so game shuts down if this script is shut down by user
     p.daemon = 1
     p.wait()
-    print("Finished running match")
 
+    logging.info("Finished running match")
+    callback_when_finished()
 
-# Get location of this run file
-file_dir = os.path.dirname(os.path.realpath(__file__))
-parent_dir = os.path.join(file_dir, os.pardir)
-parent_dir = os.path.abspath(parent_dir)
-def run():
 
 class TerminalEnv(gym.env):
 
