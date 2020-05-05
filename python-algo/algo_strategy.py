@@ -61,6 +61,8 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         self.starter_strategy(game_state)
 
+        # for unit in game_state
+
         game_state.submit_turn()
 
 
