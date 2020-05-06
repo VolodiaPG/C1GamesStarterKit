@@ -6,7 +6,7 @@ import subprocess
 import os
 import signal
 import sys
-
+import time
 import rpyc
 
 LOG_FMT = logging.Formatter('%(levelname)s '
@@ -16,9 +16,20 @@ LOG_FMT = logging.Formatter('%(levelname)s '
 PORT = 4242  # port to communicate with the game playing throught the java program
 HOSTNAME = "localhost"
 
-ALGO1 = "./run.sh"
-ALGO2 = "../../../../python-algo/run.sh"
-ENGINE = "../../../../engine.jar"
+is_windows = sys.platform.startswith('win')
+# Get location of this run file
+file_dir = os.path.dirname(os.path.realpath(__file__))
+parent_dir = os.path.join(file_dir, os.pardir)
+parent_dir = os.path.join(parent_dir, os.pardir)
+parent_dir = os.path.join(parent_dir, os.pardir)
+parent_dir = os.path.join(parent_dir, os.pardir)
+parent_dir = os.path.abspath(parent_dir)
+file_dir = os.path.abspath(file_dir)
+
+ALGO1 = file_dir + ("\\run.ps1" if is_windows else "/run.sh")
+ALGO2 = parent_dir + ("\\python-algo\\run.ps1" if is_windows else '/python-algo/run.sh')
+ENGINE = parent_dir + ("\\engine.jar" if is_windows else "/engine.jar")
+print(ENGINE)
 COMMAND_SINGLE_GAME = f'java -jar {ENGINE} work {ALGO1} {ALGO2}'
 
 MAP_SIZE: int = 27 * 14
@@ -75,7 +86,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         # then there is still the option of being able to stop the turn and go on to the next
         self.action_space = spaces.Discrete(int(MAP_SIZE / 2) * 8)
 
-        self.seed()
+        # self.seed()
         logging.info('Environment initialized')
 
     def step(self, action):
@@ -104,6 +115,20 @@ class TerminalEnv(gym.Env, rpyc.Service):
             self.process = None
         self.process = run_single_game()
 
+        attempts = 0
+        for _ in range(20):
+            try:
+                self.conn = rpyc.connect(HOSTNAME, PORT)
+                break
+            except:
+                pass
+            time.sleep(0.500)
+            attempts += 1
+
+        if (self.conn):
+            logging.info(f'Connection successful to game engine after {attempts} attempts')
+        else:
+            raise
         logging.info('Environment reset')
         return self._get_obs()
 
@@ -116,11 +141,12 @@ class TerminalEnv(gym.Env, rpyc.Service):
         # connect back to the source, ie the script we just started
         # self.conn = rpyc.connect(HOSTNAME, PORT)
         self.conn = conn
+        pass
 
     def on_disconnect(self, conn):
         pass
 
-    def set_log_level_by(verbosity):
+    def set_log_level_by(self, verbosity):
         """Set log level by verbosity level.
         verbosity vs log level:
             0 -> logging.ERROR
