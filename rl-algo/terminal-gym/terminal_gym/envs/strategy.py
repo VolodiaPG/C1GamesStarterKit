@@ -25,12 +25,11 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
         super().__init__()
 
         self.playing_flag = True
+        self.game_state = None
 
         seed = random.randrange(maxsize)
         random.seed(seed)
         gamelib.debug_write('Random seed: {}'.format(seed))
-
-        self.conn = rpyc.connect('localhost', 4243)
 
     def on_game_start(self, config):
         """ 
@@ -65,8 +64,8 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
         unit deployments, and transmitting your intended deployments to the
         game engine.
         """
-        game_state = gamelib.GameState(self.config, turn_state)
-        gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(game_state.turn_number))
+        self.game_state = gamelib.GameState(self.config, turn_state)
+        gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(self.game_state.turn_number))
         # game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
         self.playing_flag = True
@@ -76,35 +75,6 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
 
         # game_state.submit_turn()
 
-
-    """
-    NOTE: All the methods after this point are part of the sample starter-algo
-    strategy and can safely be replaced for your custom algo.
-    """
-
-    def strategy(self, game_state):
-        """
-        For defense we will use a spread out layout and some Scramblers early on.
-        We will place destructors near locations the opponent managed to score on.
-        For offense we will use long range EMPs if they place stationary units near the enemy's front.
-        If there are no stationary units to attack in the front, we will send Pings to try and score quickly.
-        """
-        # First, place basic defenses
-        self.build_defences(game_state)
-
-    # def build_defences(self, game_state):
-    #     """
-    #     Build basic defenses using hardcoded locations.
-    #     Remember to defend corners and avoid placing units in the front where enemy EMPs can attack them.
-    #     """
-    #     # Useful tool for setting up your base locations: https://www.kevinbai.design/terminal-map-maker
-    #     # More community tools available at: https://terminal.c1games.com/rules#Download
-    #
-    #     # Place filters in front of destructors to soak up damage for them
-    #     filter_locations = [[x,13] for x in range(0,28)]
-    #     game_state.attempt_spawn(FILTER, filter_locations)
-    #     # upgrade filters so they soak more damage
-    #     game_state.attempt_upgrade(filter_locations)
 
     def on_action_frame(self, turn_string):
         """
@@ -131,7 +101,7 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
         pass
 
     def on_disconnect(self, conn):
-        self.conn.close()
+        pass
 
     def exposed_perform_action(self, location, move_id):
         """
@@ -140,11 +110,15 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
         move_id : the id of what should be spawned
         Returns wether or not the action has been performed
         """
-        return self.game_state.attempt_spawn(self.moves[move_id], [location]) == 1
+        res = False
+        if self.playing_flag and self.game_state:
+            ret = self.game_state.attempt_spawn(self.moves[move_id], [location]) == 1
+        return res
 
     def exposed_wrap_up_turn(self):
         self.playing_flag = False
         self.game_state.submit_turn()
+        self.game_state = None
 
     def exposed_get_map(self):
         """
