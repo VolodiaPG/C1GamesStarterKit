@@ -5,6 +5,7 @@ import subprocess
 # import threading
 import os
 import signal
+import sys
 
 import rpyc
 
@@ -18,12 +19,16 @@ HOSTNAME = "localhost"
 ALGO1 = "./run.sh"
 ALGO2 = "../../../../python-algo/run.sh"
 ENGINE = "../../../../engine.jar"
-COMMAND_SINGLE_GAME = f'java -jar  {ENGINE} work {ALGO1} {ALGO2}'
+COMMAND_SINGLE_GAME = f'java -jar {ENGINE} work {ALGO1} {ALGO2}'
 
 MAP_SIZE: int = 27 * 14
 
+NO_REWARD = 0
+WIN_REWARD = 1
+LOSS_REWARD = -1
 
-def run_single_game(on_exit_fn):
+
+def run_single_game():
     """
     Runs the game in a thread thanks to a subprocess.Popen
     on_exit when the instance finishes
@@ -56,7 +61,7 @@ def terminate_single_game(process):
     os.kill(os.getpgid(process.pid), signal.SIGTERM)  # send the signal to all the process in the group
 
 
-class TerminalEnv(gym.env):
+class TerminalEnv(gym.Env, rpyc.Service):
 
     def __init__(self):
         super(TerminalEnv, self).__init__()
@@ -76,6 +81,8 @@ class TerminalEnv(gym.env):
     def step(self, action):
         assert self.action_space.contains(action)
 
+        reward = NO_REWARD
+
         move_id = (action - action % MAP_SIZE) / MAP_SIZE
         if (move_id < 8):
             location_id = action % MAP_SIZE
@@ -85,6 +92,7 @@ class TerminalEnv(gym.env):
             assert self.conn.root.perform_action((x, y), move_id) == True
         else:
             self.conn.root.wrap_up_turn()
+            reward = WIN_REWARD
 
         logging.info('Step successful!')
 
@@ -95,7 +103,6 @@ class TerminalEnv(gym.env):
             terminate_single_game(self.process)
             self.process = None
         self.process = run_single_game()
-        self.conn = rpyc.connect(HOSTNAME, PORT, service=AlgoStrategy)
 
         logging.info('Environment reset')
         return self._get_obs()
@@ -104,6 +111,14 @@ class TerminalEnv(gym.env):
         map = tuple(self.conn.root.get_map())
         details = tuple(self.conn.root.get_details())
         return map, details
+
+    def on_connect(self, conn):
+        # connect back to the source, ie the script we just started
+        # self.conn = rpyc.connect(HOSTNAME, PORT)
+        self.conn = conn
+
+    def on_disconnect(self, conn):
+        pass
 
     def set_log_level_by(verbosity):
         """Set log level by verbosity level.

@@ -30,6 +30,8 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
         random.seed(seed)
         gamelib.debug_write('Random seed: {}'.format(seed))
 
+        self.conn = rpyc.connect('localhost', 4243)
+
     def on_game_start(self, config):
         """ 
         Read in config and perform any initial setup here 
@@ -125,6 +127,12 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
                 self.scored_on_locations.append(location)
                 gamelib.debug_write("All locations: {}".format(self.scored_on_locations))
 
+    def on_connect(self, conn):
+        pass
+
+    def on_disconnect(self, conn):
+        self.conn.close()
+
     def exposed_perform_action(self, location, move_id):
         """
         Perform an action
@@ -163,5 +171,9 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
 
 
 if __name__ == "__main__":
-    algo = AlgoStrategy()
-    algo.start()
+    # algo = AlgoStrategy()
+    # algo.start()
+    from rpyc.utils.server import OneShotServer
+
+    t = OneShotServer(AlgoStrategy(), port=4242)
+    t.start()
