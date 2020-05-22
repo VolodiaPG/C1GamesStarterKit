@@ -26,11 +26,11 @@ parent_dir = os.path.join(parent_dir, os.pardir)
 parent_dir = os.path.abspath(parent_dir)
 file_dir = os.path.abspath(file_dir)
 
-ALGO1 = file_dir + ("\\run.ps1" if is_windows else "/run.sh")
-ALGO2 = parent_dir + ("\\python-algo\\run.ps1" if is_windows else '/python-algo/run.sh')
-ENGINE = parent_dir + ("\\engine.jar" if is_windows else "/engine.jar")
-print(ENGINE)
-COMMAND_SINGLE_GAME = f'java -jar {ENGINE} work {ALGO1} {ALGO2}'
+ALGO1 = file_dir
+ALGO2 = parent_dir + ("\\simple-algo" if is_windows else '/simple-algo')
+
+COMMAND_SINGLE_GAME = f'cd {parent_dir} && .\\scripts\\run_match.ps1 {ALGO1} {ALGO2}' if is_windows else f'cd {parent_dir} && ./scripts/run_match.sh {ALGO1} {ALGO2}'
+print(COMMAND_SINGLE_GAME)
 
 MAP_SIZE: int = 27 * 14
 
@@ -110,6 +110,10 @@ class TerminalEnv(gym.Env, rpyc.Service):
         return self._get_obs(), reward, self.done, None
 
     def reset(self):
+        if (self.conn):
+            self.conn.close()
+            self.conn = None
+
         if self.process:
             terminate_single_game(self.process)
             self.process = None
@@ -125,6 +129,8 @@ class TerminalEnv(gym.Env, rpyc.Service):
             time.sleep(0.500)
             attempts += 1
 
+        logging.debug(attempts)
+
         if (self.conn):
             logging.info(f'Connection successful to game engine after {attempts} attempts')
         else:
@@ -133,18 +139,12 @@ class TerminalEnv(gym.Env, rpyc.Service):
         return self._get_obs()
 
     def _get_obs(self):
+        while not self.conn.root.is_playing():
+            time.sleep(0.5)
+            logging.info("Sleeping..")
         map = tuple(self.conn.root.get_map())
         details = tuple(self.conn.root.get_details())
         return map, details
-
-    def on_connect(self, conn):
-        # connect back to the source, ie the script we just started
-        # self.conn = rpyc.connect(HOSTNAME, PORT)
-        self.conn = conn
-        pass
-
-    def on_disconnect(self, conn):
-        pass
 
     def set_log_level_by(self, verbosity):
         """Set log level by verbosity level.

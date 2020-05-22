@@ -1,10 +1,11 @@
-import gamelib
+# import gamelib
 import random
 import math
 import warnings
 from sys import maxsize
 import json
 import rpyc
+from terminal_gym.envs import gamelib
 
 """
 Most of the algo code you write will be in this file unless you create new
@@ -24,12 +25,16 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
     def __init__(self):
         super().__init__()
 
-        self.playing_flag = True
+        self.playing_flag = False
         self.game_state = None
+
+        self.ITOU = {}
+        self.UTOI= {}
 
         seed = random.randrange(maxsize)
         random.seed(seed)
         gamelib.debug_write('Random seed: {}'.format(seed))
+        self.start()
 
     def on_game_start(self, config):
         """ 
@@ -64,12 +69,23 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
         unit deployments, and transmitting your intended deployments to the
         game engine.
         """
+        gamelib.debug_write("tTOTOSDFqjshdbfjqsifbvhgqdsvf")
         self.game_state = gamelib.GameState(self.config, turn_state)
-        gamelib.debug_write('Performing turn {} of your custom algo strategy'.format(self.game_state.turn_number))
+        gamelib.debug_write('Performing turn {} of the terminal env algo'.format(self.game_state.turn_number))
         # game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
-        self.playing_flag = True
-        
+
+        # if (self.game_state.turn_number > 0):
+        #     self.playing_flag = True
+        # else:
+        #     pass
+        # filter_locations = [[x, 13] for x in range(0, 28)]
+        # self.game_state.attempt_spawn(self.ITOU[0], filter_locations)
+        # # upgrade filters so they soak more damage
+        # self.game_state.attempt_upgrade(filter_locations)
+        # self.game_state.submit_turn()
+
+
 
         # self.strategy(game_state)
 
@@ -98,10 +114,14 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
                 gamelib.debug_write("All locations: {}".format(self.scored_on_locations))
 
     def on_connect(self, conn):
-        pass
+        gamelib.debug_write("Connected from the outside world")
 
     def on_disconnect(self, conn):
-        pass
+        gamelib.debug_write("Disconnected from the outside world")
+
+    def exposed_is_playing(self):
+        gamelib.debug_write(f"asking if playing, ans :{self.playing_flag}")
+        return self.playing_flag
 
     def exposed_perform_action(self, location, move_id):
         """
@@ -127,7 +147,9 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
         """
         map = []
         ii = 0
-        # TODO not taking into accound the fact that units can get stacked on one other
+        # TODO not taking into account the fact that units can get stacked on one other
+        gamelib.debug_write("Printing game state")
+        gamelib.debug_write(self.game_state)
         for units in self.game_state.game_map:
             if units:
                 unit = units[0]
@@ -145,9 +167,10 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
 
 
 if __name__ == "__main__":
-    # algo = AlgoStrategy()
-    # algo.start()
     from rpyc.utils.server import OneShotServer
 
     t = OneShotServer(AlgoStrategy(), port=4242)
     t.start()
+
+    # algo = AlgoStrategy()
+    # algo.start()
