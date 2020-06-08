@@ -32,11 +32,15 @@ ALGO2 = parent_dir + ("\\simple-algo" if is_windows else '/simple-algo')
 COMMAND_SINGLE_GAME = f'cd {parent_dir} && .\\scripts\\run_match.ps1 {ALGO1} {ALGO2}' if is_windows else f'cd {parent_dir} && ./scripts/run_match.sh {ALGO1} {ALGO2}'
 print(COMMAND_SINGLE_GAME)
 
-MAP_SIZE: int = 27 * 14
+LINE_SIZE: int = 14
+MAP_SIZE: int = 27 * LINE_SIZE
+NUM_DIFFERENT_UNIT_TYPES = 6
 
 NO_REWARD = 0
 WIN_REWARD = 1
 LOSS_REWARD = -1
+
+DELAY = 0.25
 
 
 def run_single_game():
@@ -84,33 +88,51 @@ class TerminalEnv(gym.Env, rpyc.Service):
         self.observation_space = spaces.Discrete(MAP_SIZE + 2 * 2)
         # we assume the actions available are placing something on the board in 1 step
         # then there is still the option of being able to stop the turn and go on to the next
-        self.action_space = spaces.Discrete(int(MAP_SIZE / 2) * 8)
+        self.action_space = spaces.Discrete(int(MAP_SIZE / 2) * NUM_DIFFERENT_UNIT_TYPES + 1)
 
         # self.seed()
         logging.info('Environment initialized')
 
     def step(self, action):
+        # self.conn.root.add_movement(action)
+        # return None, None, None, None
         assert self.action_space.contains(action)
+
+        logging.info(f"Waiting for step with action {action}...")
+
+        while not self.conn.root.is_available_to_add():
+            time.sleep(DELAY)
+
+        logging.info("Done waiting, stepping.")
 
         reward = NO_REWARD
 
-        move_id = (action - action % MAP_SIZE) / MAP_SIZE
-        if (move_id < 8):
-            location_id = action % MAP_SIZE
-            x = location_id % MAP_SIZE
-            y = location_id / MAP_SIZE
-
-            assert self.conn.root.perform_action((x, y), move_id) == True
+        move_id = int(action / int(MAP_SIZE / 2))
+        if move_id == 0:
+            logging.warning("Wrapping up our turn")
+            self.conn.root.add_movement(-1)
+            # wrap up turn
+            pass
         else:
-            self.conn.root.wrap_up_turn()
-            reward = WIN_REWARD
+            action -= 1  # 0 is the wrap up turn
+            location_id = action % int(MAP_SIZE / 2)
+            x = location_id % LINE_SIZE
+            y = int(location_id / LINE_SIZE)
+
+            logging.warning(f"Making move: unit #{move_id} to ({x}, {y})")
+
+            self.conn.root.add_movement(((x, y), move_id))
+            # assert self.conn.root.perform_action((x, y), move_id) == True
+        # else:
+        #     self.conn.root.wrap_up_turn()
+        # reward = WIN_REWARD
 
         logging.info('Step successful!')
 
-        return self._get_obs(), reward, self.done, None
+        return self._get_obs(), reward, False, None
 
     def reset(self):
-        if (self.conn):
+        if self.conn:
             self.conn.close()
             self.conn = None
 
@@ -126,25 +148,23 @@ class TerminalEnv(gym.Env, rpyc.Service):
                 break
             except:
                 pass
-            time.sleep(0.500)
+            time.sleep(DELAY)
             attempts += 1
 
         logging.debug(attempts)
 
-        if (self.conn):
+        if self.conn:
             logging.info(f'Connection successful to game engine after {attempts} attempts')
         else:
             raise
+        logging.warning('Connected to middleware!')
         logging.info('Environment reset')
         return self._get_obs()
 
     def _get_obs(self):
-        while not self.conn.root.is_playing():
-            time.sleep(0.5)
-            logging.info("Sleeping..")
-        map = tuple(self.conn.root.get_map())
-        details = tuple(self.conn.root.get_details())
-        return map, details
+        while not self.conn.root.is_available_pop_obs():
+            time.sleep(DELAY)
+        return self.conn.root.pop_obs()
 
     def set_log_level_by(self, verbosity):
         """Set log level by verbosity level.

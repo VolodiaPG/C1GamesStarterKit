@@ -1,11 +1,13 @@
-# import gamelib
 import random
 import math
 import warnings
 from sys import maxsize
 import json
-import rpyc
 from terminal_gym.envs import gamelib
+import rpyc
+from terminal_gym.envs.middleware import Middleware
+import threading
+import time
 
 """
 Most of the algo code you write will be in this file unless you create new
@@ -21,12 +23,14 @@ Advanced strategy tips:
 """
 
 
-class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
+class AlgoStrategy(gamelib.AlgoCore):
     def __init__(self):
         super().__init__()
 
-        self.playing_flag = False
-        self.game_state = None
+        self.server = threading.Thread(target= lambda : rpyc.ThreadedServer(Middleware(), port=4242).start(), daemon=True)
+        self.server.start()
+        self.conn = None
+
 
         self.ITOU = {}
         self.UTOI= {}
@@ -34,7 +38,6 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
         seed = random.randrange(maxsize)
         random.seed(seed)
         gamelib.debug_write('Random seed: {}'.format(seed))
-        self.start()
 
     def on_game_start(self, config):
         """ 
@@ -46,9 +49,9 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
         # global FILTER, ENCRYPTOR, DESTRUCTOR, PING, EMP, SCRAMBLER, BITS, CORES
 
         for k in range(6):
-            type = config["unitInformation"][k]["shorthand"]
-            self.ITOU[k] = type
-            self.UTOI[type] = k
+            unit_type = config["unitInformation"][k]["shorthand"]
+            self.ITOU[k] = unit_type
+            self.UTOI[unit_type] = k
 
         # FILTER = config["unitInformation"][0]["shorthand"]
         # ENCRYPTOR = config["unitInformation"][1]["shorthand"]
@@ -61,6 +64,10 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
         # This is a good place to do initial setup
         # self.scored_on_locations = []
 
+        self.conn = rpyc.connect("localhost", 4242)
+        assert self.conn is not None
+        gamelib.debug_write("Connected to middleware!")
+
     def on_turn(self, turn_state):
         """
         This function is called every turn with the game state wrapper as
@@ -69,11 +76,36 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
         unit deployments, and transmitting your intended deployments to the
         game engine.
         """
-        gamelib.debug_write("tTOTOSDFqjshdbfjqsifbvhgqdsvf")
         self.game_state = gamelib.GameState(self.config, turn_state)
         gamelib.debug_write('Performing turn {} of the terminal env algo'.format(self.game_state.turn_number))
+
+        # update the status of the game
+        self.conn.root.add_obs(self.get_obs())
         # game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
+
+        movement = 0;
+        # while movement != -1:
+        self.conn.root.ask_next_step()
+        gamelib.debug_write("Waiting for movement...")
+        while not self.conn.root.is_move_available():
+            time.sleep(0.25)
+
+        gamelib.debug_write("Finished waiting for movement, now popping it.")
+
+        movement = self.conn.root.pop_movement()
+        if movement != -1:
+            gamelib.debug_write(f"Movement got: {movement} -->"
+                                f" unit type: {self.ITOU[movement[1]]} to move to {movement[0]}")
+            self.game_state.attempt_spawn(self.ITOU[movement[1]], movement[0])
+
+        self.conn.root.add_obs(self.get_obs())
+
+        # unit = movement / 8
+        # cell = movement % int(MAP_SIZE / 2)
+        #
+        # if self.playing_flag and self.game_state:
+        #     self.game_state.attempt_spawn(self.moves[move_id], [location]) == 1
 
         # if (self.game_state.turn_number > 0):
         #     self.playing_flag = True
@@ -88,9 +120,7 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
 
 
         # self.strategy(game_state)
-
-        # game_state.submit_turn()
-
+        self.game_state.submit_turn()
 
     def on_action_frame(self, turn_string):
         """
@@ -113,64 +143,71 @@ class AlgoStrategy(gamelib.AlgoCore, rpyc.Service):
                 self.scored_on_locations.append(location)
                 gamelib.debug_write("All locations: {}".format(self.scored_on_locations))
 
-    def on_connect(self, conn):
-        gamelib.debug_write("Connected from the outside world")
+    # def on_connect(self, conn):
+    #     gamelib.debug_write("Connected from the outside world")
+    #
+    # def on_disconnect(self, conn):
+    #     gamelib.debug_write("Disconnected from the outside world")
+    #
+    # def exposed_is_playing(self):
+    #     gamelib.debug_write(f"asking if playing, ans :{self.playing_flag}")
+    #     return self.playing_flag
+    #
+    # def exposed_perform_action(self, location, move_id):
+    #     """
+    #     Perform an action
+    #     location : tuple
+    #     move_id : the id of what should be spawned
+    #     Returns wether or not the action has been performed
+    #     """
+    #     res = False
+    #     if self.playing_flag and self.game_state:
+    #         ret = self.game_state.attempt_spawn(self.moves[move_id], [location]) == 1
+    #     return res
+    #
+    # def exposed_wrap_up_turn(self):
+    #     self.playing_flag = False
+    #     self.game_state.submit_turn()
+    #     self.game_state = None
+    #
+    def get_obs(self):
+        map = self.get_map()
+        detail = self.get_detail()
+        return map, detail
 
-    def on_disconnect(self, conn):
-        gamelib.debug_write("Disconnected from the outside world")
-
-    def exposed_is_playing(self):
-        gamelib.debug_write(f"asking if playing, ans :{self.playing_flag}")
-        return self.playing_flag
-
-    def exposed_perform_action(self, location, move_id):
-        """
-        Perform an action
-        location : tuple
-        move_id : the id of what should be spawned
-        Returns wether or not the action has been performed
-        """
-        res = False
-        if self.playing_flag and self.game_state:
-            ret = self.game_state.attempt_spawn(self.moves[move_id], [location]) == 1
-        return res
-
-    def exposed_wrap_up_turn(self):
-        self.playing_flag = False
-        self.game_state.submit_turn()
-        self.game_state = None
-
-    def exposed_get_map(self):
+    def get_map(self):
         """
         Gets the map of the game (simplified)
-        :return: a simplified game map (all int, negative for the ennemy)
+        :return: a simplified game map (all int, negative for the enemy)
         """
-        map = []
+        game_map = {}
         ii = 0
         # TODO not taking into account the fact that units can get stacked on one other
-        gamelib.debug_write("Printing game state")
+        gamelib.debug_write("Printing game state:")
         gamelib.debug_write(self.game_state)
-        for units in self.game_state.game_map:
-            if units:
-                unit = units[0]
-                map[ii] = self.UTOI[unit.unit_type] * (1 if unit.player_index == 1 else -1)
+        for position in self.game_state.game_map:
+            if self.game_state.game_map[position]:
+                unit = self.game_state.game_map[position][0]
+                game_map[ii] = self.UTOI[unit.unit_type] * (1 if unit.player_index == 1 else -1)
+            else:
+                game_map[ii] = 0
             ii += 1
 
-        return map
+        return game_map
 
-    def exposed_get_detail(self):
+    def get_detail(self):
         """
         Gives the details about bits & cores of each players
         :return: a tuple of the 1st player bits & cores followed by the second's
         """
-        return (gamelib.GameState.get_resources(ii)[jj] for jj in range(0, 2) for ii in range(1, 3))
+        return None
 
 
 if __name__ == "__main__":
-    from rpyc.utils.server import OneShotServer
+    # from rpyc.utils.server import OneShotServer
+    #
+    # t = OneShotServer(AlgoStrategy(), port=4242)
+    # t.start()
 
-    t = OneShotServer(AlgoStrategy(), port=4242)
-    t.start()
-
-    # algo = AlgoStrategy()
-    # algo.start()
+    algo = AlgoStrategy()
+    algo.start()
