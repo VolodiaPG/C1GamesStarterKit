@@ -2,12 +2,13 @@ import logging
 import gym
 from gym import spaces
 import subprocess
-# import threading
+import threading
 import os
 import signal
 import sys
 import time
 import rpyc
+from terminal_gym.envs.middleware import Middleware
 
 LOG_FMT = logging.Formatter('%(levelname)s '
                             '[%(filename)s:%(lineno)d] %(message)s',
@@ -81,6 +82,9 @@ class TerminalEnv(gym.Env, rpyc.Service):
     def __init__(self):
         super(TerminalEnv, self).__init__()
         self.process = None
+
+        self.server = threading.Thread(target=lambda: rpyc.ThreadedServer(Middleware(), port=4242).start(), daemon=True)
+        self.server.start()
         self.conn = None
 
         # define the obersvation space, ie the whole board + extra :
@@ -129,12 +133,16 @@ class TerminalEnv(gym.Env, rpyc.Service):
 
         logging.info('Step successful!')
 
-        return self._get_obs(), reward, False, None
+        done = self.conn.root.is_done()
+        # if done:
+        #     self.conn.close()
+
+        return self._get_obs(), reward, done, None
 
     def reset(self):
-        if self.conn:
-            self.conn.close()
-            self.conn = None
+        # if self.conn:
+        #     self.conn.close()
+        #     self.conn = None
 
         if self.process:
             terminate_single_game(self.process)

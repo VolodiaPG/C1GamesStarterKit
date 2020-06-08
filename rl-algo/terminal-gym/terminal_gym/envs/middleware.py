@@ -11,6 +11,7 @@ class Memory:
         self.ask_move = False
         self.movement = None
         self.obs = None
+        self.done = False
 
     def set_asking_move(self, value):
         self.ask_move = value
@@ -43,6 +44,12 @@ class Memory:
         self.obs = None
         return ret
 
+    def set_done(self, value: bool):
+        self.done = value
+
+    def is_done(self):
+        return self.done
+
 
 # not much to say ...
 MEMORY = Memory()
@@ -60,8 +67,9 @@ class Middleware(rpyc.Service):
         """
         logging.warning("Connected")
 
-    def on_disconnect(self):
+    def on_disconnect(self, _):
         logging.warning("Disconnected")
+        MEMORY.set_done(True)
 
     def exposed_add_movement(self, movement):
         assert movement is not None
@@ -94,6 +102,11 @@ class Middleware(rpyc.Service):
     def exposed_pop_obs(self):
         logging.info("Popped observation")
         return MEMORY.pop_obs()
+
+    def exposed_is_done(self):
+        ret = MEMORY.is_done()
+        MEMORY.set_done(False)
+        return ret
 
     def set_log_level_by(self, verbosity, filename):
         """Set log level by verbosity level.

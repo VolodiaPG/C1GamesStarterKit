@@ -1,6 +1,4 @@
 import random
-import math
-import warnings
 from sys import maxsize
 import json
 from terminal_gym.envs import gamelib
@@ -27,8 +25,6 @@ class AlgoStrategy(gamelib.AlgoCore):
     def __init__(self):
         super().__init__()
 
-        self.server = threading.Thread(target= lambda : rpyc.ThreadedServer(Middleware(), port=4242).start(), daemon=True)
-        self.server.start()
         self.conn = None
 
 
