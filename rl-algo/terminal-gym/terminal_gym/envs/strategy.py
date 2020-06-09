@@ -3,9 +3,9 @@ from sys import maxsize
 import json
 from terminal_gym.envs import gamelib
 import rpyc
-from terminal_gym.envs.middleware import Middleware
-import threading
 import time
+
+DELAY = 0.1
 
 """
 Most of the algo code you write will be in this file unless you create new
@@ -79,13 +79,12 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.conn.root.add_obs(self.get_obs())
         # game_state.suppress_warnings(True)  #Comment or remove this line to enable warnings.
 
-
-        movement = 0;
+        movement = 0
         # while movement != -1:
         self.conn.root.ask_next_step()
         gamelib.debug_write("Waiting for movement...")
         while not self.conn.root.is_move_available():
-            time.sleep(0.25)
+            time.sleep(DELAY)
 
         gamelib.debug_write("Finished waiting for movement, now popping it.")
 
@@ -136,8 +135,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             # 1 is integer for yourself, 2 is opponent (StarterKit code uses 0, 1 as player_index instead)
             if not unit_owner_self:
                 gamelib.debug_write("Got scored on at: {}".format(location))
-                self.scored_on_locations.append(location)
-                gamelib.debug_write("All locations: {}".format(self.scored_on_locations))
+                # self.scored_on_locations.append(location)
+                # gamelib.debug_write("All locations: {}".format(self.scored_on_locations))
 
     # def on_connect(self, conn):
     #     gamelib.debug_write("Connected from the outside world")

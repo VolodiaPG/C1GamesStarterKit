@@ -41,7 +41,7 @@ NO_REWARD = 0
 WIN_REWARD = 1
 LOSS_REWARD = -1
 
-DELAY = 0.25
+DELAY = 0.1
 
 
 def run_single_game():
@@ -97,7 +97,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         # self.seed()
         logging.info('Environment initialized')
 
-    def step(self, action):
+    def step(self, action: int):
         # self.conn.root.add_movement(action)
         # return None, None, None, None
         assert self.action_space.contains(action)
@@ -186,6 +186,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         Returns:
             (int): Matching log level.
         """
+        level = 0
         if verbosity == 0:
             level = 40
         elif verbosity == 1:
