@@ -188,7 +188,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         return pro
 
     def terminate_single_game(self, process):
-        logging.info('manually killing a subprocess')
+        logging.info('manually killing the game engine')
         process.kill()
         # os.kill(os.getpgid(process.pid), signal.SIGTERM)  # send the signal to all the process in the group
 
