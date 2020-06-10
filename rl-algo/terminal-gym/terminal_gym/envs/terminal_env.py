@@ -9,14 +9,17 @@ import time
 import rpyc
 from terminal_gym.envs.middleware import Middleware
 import portpicker
+import socket
 
 LOG_FMT = logging.Formatter('%(levelname)s '
                             '[%(filename)s:%(lineno)d] %(message)s',
                             '%Y-%m-%d %H:%M:%S')
 PORT_CONFIG_FILE = '/tmp/C1GamesStarterKitPort.conf'
+HOST_CONFIG_FILE = '/tmp/C1GamesStarterKitHost.conf'
 PORT = 0
 
-HOSTNAME = "0.0.0.0"
+HOSTNAME = ""
+
 DELAY = 0.05  # seconds
 
 is_windows = sys.platform.startswith('win')
@@ -91,6 +94,13 @@ class TerminalEnv(gym.Env, rpyc.Service):
         PORT = portpicker.pick_unused_port()  # port to communicate with the game playing throught the java program, will be wrote down to a config file
         f = open(PORT_CONFIG_FILE, 'w')
         f.write(str(PORT))
+        f.close()
+
+        global HOSTNAME
+        hostname = socket.gethostname()
+        HOSTNAME = socket.gethostbyname(hostname)
+        f = open(HOST_CONFIG_FILE, 'w')
+        f.write(HOSTNAME)
         f.close()
 
         logging.info(f'Main port is: {PORT}')
