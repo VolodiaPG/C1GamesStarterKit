@@ -169,7 +169,6 @@ class TerminalEnv(gym.Env, rpyc.Service):
         logging.debug(f"Running {COMMAND_SINGLE_GAME}")
         print("QSDFHJSDFIQHSDIFSDQFHISFHHSDIFHOIH")
 
-
         # def run_in_thread(on_exit_fn, pro):
         #     # daemon necessary so game shuts down if this script is shut down by user
         #     pro.daemon = 1
@@ -177,14 +176,16 @@ class TerminalEnv(gym.Env, rpyc.Service):
         #     logging.info(f'Game finished, {"calling callback" if on_exit_fn else "no callback set, finished"}')
         #     on_exit_fn()
 
-        pro = subprocess.Popen(
-            COMMAND_SINGLE_GAME,
-            shell=True,
-            stdout=sys.stdout,
-            stderr=sys.stderr
-            # preexec_fn=os.setsid
-        )
-        pro.daemon = 1  # daemon necessary so game shuts down if this script is shut down by user
+        pro = None
+
+        # pro = subprocess.Popen(
+        #     COMMAND_SINGLE_GAME,
+        #     shell=True,
+        #     stdout=sys.stdout,
+        #     stderr=sys.stderr
+        #     # preexec_fn=os.setsid
+        # )
+        # pro.daemon = 1  # daemon necessary so game shuts down if this script is shut down by user
         # thread = threading.Thread(target=run_in_thread, args=(on_exit_fn, pro))
         # thread.start()
         logging.debug('The subprocess has been started')
