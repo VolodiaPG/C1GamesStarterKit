@@ -4,17 +4,18 @@ from gym import spaces
 import subprocess
 import threading
 import os
-import signal
 import sys
 import time
 import rpyc
 from terminal_gym.envs.middleware import Middleware
+import portpicker
 
 LOG_FMT = logging.Formatter('%(levelname)s '
                             '[%(filename)s:%(lineno)d] %(message)s',
                             '%Y-%m-%d %H:%M:%S')
+PORT_CONFIG_FILE = '/tmp/C1GamesStarterKitPort.conf'
+PORT = 0
 
-PORT = 18519  # port to communicate with the game playing throught the java program
 HOSTNAME = "127.0.0.1"
 DELAY = 0.05  # seconds
 
@@ -63,7 +64,7 @@ def run_single_game():
         COMMAND_SINGLE_GAME,
         shell=True,
         stdout=sys.stdout,
-        stderr=sys.stderr,
+        stderr=sys.stderr
         # preexec_fn=os.setsid
     )
     pro.daemon = 1  # daemon necessary so game shuts down if this script is shut down by user
@@ -84,6 +85,14 @@ class TerminalEnv(gym.Env, rpyc.Service):
         super(TerminalEnv, self).__init__()
         self.process = None
 
+        # write down port for the rest of the execution
+        global PORT
+        PORT = portpicker.pick_unused_port()  # port to communicate with the game playing throught the java program, will be wrote down to a config file
+        f = open(PORT_CONFIG_FILE, 'w')
+        f.write(str(PORT))
+        f.close()
+
+        print(f'Main port is: {PORT}')
         self.server = threading.Thread(target=lambda: rpyc.ThreadedServer(Middleware(), port=PORT).start(), daemon=True)
         self.server.start()
         self.conn = None
@@ -165,7 +174,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         if self.conn:
             logging.info(f'Connection successful to game engine after {attempts} attempts')
         else:
-            raise
+            raise Exception("Did not connect successfully to game engine")
         logging.warning('Connected to middleware!')
         logging.info('Environment reset')
         return self._get_obs()

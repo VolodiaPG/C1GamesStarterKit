@@ -4,8 +4,9 @@ import json
 from terminal_gym.envs import gamelib
 import rpyc
 import time
-from terminal_env import PORT
-from terminal_env import DELAY
+from terminal_env import DELAY, PORT_CONFIG_FILE
+
+PORT = 0
 
 """
 Most of the algo code you write will be in this file unless you create new
@@ -27,12 +28,18 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         self.conn = None
 
-
         self.ITOU = {}
-        self.UTOI= {}
+        self.UTOI = {}
 
         seed = random.randrange(maxsize)
         random.seed(seed)
+
+        # read the port from the env var
+        f = open(PORT_CONFIG_FILE, 'r')
+        global PORT
+        PORT = int(f.read())
+        f.close()
+        gamelib.debug_write(f'Detected port: {PORT}')
         gamelib.debug_write('Random seed: {}'.format(seed))
 
     def on_game_start(self, config):

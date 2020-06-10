@@ -5,12 +5,16 @@ import sys
 # Runs a single game
 def run_single_game(process_command):
     print("Start run a match")
+    f = open("/tmp/c1game.log", "w")
+    f.write(os.environ['TERMINAL_GAME_PORT'])
+    f.close()
     p = subprocess.Popen(
         process_command,
         shell=True,
         stdout=sys.stdout,
-        stderr=sys.stderr
-        )
+        stderr=sys.stderr,
+        env=dict(os.environ)
+    )
     # daemon necessary so game shuts down if this script is shut down by user
     p.daemon = 1
     p.wait()
