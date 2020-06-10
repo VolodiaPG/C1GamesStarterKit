@@ -45,43 +45,6 @@ NO_REWARD = 0
 WIN_REWARD = 1
 LOSS_REWARD = -1
 
-
-
-def run_single_game():
-    """
-    Runs the game in a thread thanks to a subprocess.Popen
-    on_exit when the instance finishes
-    returns the subprocess process
-    """
-    logging.info("Start run a match")
-    logging.debug(f"Running {COMMAND_SINGLE_GAME}")
-
-    # def run_in_thread(on_exit_fn, pro):
-    #     # daemon necessary so game shuts down if this script is shut down by user
-    #     pro.daemon = 1
-    #     pro.wait()
-    #     logging.info(f'Game finished, {"calling callback" if on_exit_fn else "no callback set, finished"}')
-    #     on_exit_fn()
-
-    pro = subprocess.Popen(
-        COMMAND_SINGLE_GAME,
-        shell=True,
-        stdout=sys.stdout,
-        stderr=sys.stderr
-        # preexec_fn=os.setsid
-    )
-    pro.daemon = 1  # daemon necessary so game shuts down if this script is shut down by user
-    # thread = threading.Thread(target=run_in_thread, args=(on_exit_fn, pro))
-    # thread.start()
-    return pro
-
-
-def terminate_single_game(process):
-    logging.info('manually killing a subprocess')
-    process.kill()
-    # os.kill(os.getpgid(process.pid), signal.SIGTERM)  # send the signal to all the process in the group
-
-
 class TerminalEnv(gym.Env, rpyc.Service):
 
     def __init__(self):
@@ -167,9 +130,9 @@ class TerminalEnv(gym.Env, rpyc.Service):
         #     self.conn = None
 
         if self.process:
-            terminate_single_game(self.process)
+            self.terminate_single_game(self.process)
             self.process = None
-        self.process = run_single_game()
+        self.process = self.run_single_game()
 
         attempts = 0
         for _ in range(20):
@@ -195,6 +158,39 @@ class TerminalEnv(gym.Env, rpyc.Service):
         while not self.conn.root.is_available_pop_obs():
             time.sleep(DELAY)
         return self.conn.root.pop_obs()
+
+    def run_single_game(self):
+        """
+        Runs the game in a thread thanks to a subprocess.Popen
+        on_exit when the instance finishes
+        returns the subprocess process
+        """
+        logging.info("Start run a match")
+        logging.debug(f"Running {COMMAND_SINGLE_GAME}")
+
+        # def run_in_thread(on_exit_fn, pro):
+        #     # daemon necessary so game shuts down if this script is shut down by user
+        #     pro.daemon = 1
+        #     pro.wait()
+        #     logging.info(f'Game finished, {"calling callback" if on_exit_fn else "no callback set, finished"}')
+        #     on_exit_fn()
+
+        pro = subprocess.Popen(
+            COMMAND_SINGLE_GAME,
+            shell=True,
+            stdout=sys.stdout,
+            stderr=sys.stderr
+            # preexec_fn=os.setsid
+        )
+        pro.daemon = 1  # daemon necessary so game shuts down if this script is shut down by user
+        # thread = threading.Thread(target=run_in_thread, args=(on_exit_fn, pro))
+        # thread.start()
+        return pro
+
+    def terminate_single_game(self, process):
+        logging.info('manually killing a subprocess')
+        process.kill()
+        # os.kill(os.getpgid(process.pid), signal.SIGTERM)  # send the signal to all the process in the group
 
     def set_log_level_by(self, verbosity):
         """Set log level by verbosity level.
