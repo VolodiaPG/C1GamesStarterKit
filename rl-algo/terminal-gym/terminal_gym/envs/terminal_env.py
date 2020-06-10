@@ -36,7 +36,6 @@ ALGO1 = file_dir
 ALGO2 = parent_dir + ("\\simple-algo" if is_windows else '/simple-algo')
 
 COMMAND_SINGLE_GAME = f'cd {parent_dir} && .\\scripts\\run_match.ps1 {ALGO1} {ALGO2}' if is_windows else f'cd {parent_dir} && ./scripts/run_match.sh {ALGO1} {ALGO2}'
-print(COMMAND_SINGLE_GAME)
 
 LINE_SIZE: int = 14
 MAP_SIZE: int = 27 * LINE_SIZE
@@ -55,6 +54,7 @@ def run_single_game():
     returns the subprocess process
     """
     logging.info("Start run a match")
+    logging.debug(f"Running {COMMAND_SINGLE_GAME}")
 
     # def run_in_thread(on_exit_fn, pro):
     #     # daemon necessary so game shuts down if this script is shut down by user
