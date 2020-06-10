@@ -23,6 +23,7 @@ HOSTNAME = ""
 DELAY = 0.05  # seconds
 
 is_windows = sys.platform.startswith('win')
+print("You are running a windows machine") if is_windows else print("You are running a linux machine")
 # Get location of this run file
 file_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.join(file_dir, os.pardir)
@@ -31,6 +32,8 @@ parent_dir = os.path.join(parent_dir, os.pardir)
 parent_dir = os.path.join(parent_dir, os.pardir)
 parent_dir = os.path.abspath(parent_dir)
 file_dir = os.path.abspath(file_dir)
+
+print(f"Will look under {file_dir} for interesting files")
 
 ALGO1 = file_dir
 ALGO2 = parent_dir + ("\\simple-algo" if is_windows else '/simple-algo')
@@ -125,9 +128,9 @@ class TerminalEnv(gym.Env, rpyc.Service):
         return self._get_obs(), reward, done, None
 
     def reset(self):
-        # if self.conn:
-        #     self.conn.close()
-        #     self.conn = None
+        if self.conn:
+            self.conn.close()
+            self.conn = None
 
         if self.process:
             self.terminate_single_game(self.process)
@@ -165,7 +168,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         on_exit when the instance finishes
         returns the subprocess process
         """
-        logging.info("Start run a match")
+        logging.info("Start running a match")
         logging.debug(f"Running {COMMAND_SINGLE_GAME}")
         print("QSDFHJSDFIQHSDIFSDQFHISFHHSDIFHOIH")
 
@@ -176,7 +179,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         #     logging.info(f'Game finished, {"calling callback" if on_exit_fn else "no callback set, finished"}')
         #     on_exit_fn()
 
-        pro = None
+        pro = True
 
         # pro = subprocess.Popen(
         #     COMMAND_SINGLE_GAME,
