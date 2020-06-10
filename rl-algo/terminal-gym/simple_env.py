@@ -1,5 +1,5 @@
 import gym
-import envs  # needed for TerminalEnv
+import terminal_gym.envs  # needed for TerminalEnv
 
 if __name__ == "__main__":
     env = gym.make("TerminalEnv-v0")
