@@ -63,8 +63,8 @@ def run_single_game():
     pro = subprocess.Popen(
         COMMAND_SINGLE_GAME,
         shell=True,
-        stdout=sys.stdout,
-        stderr=sys.stderr
+        # stdout=sys.stdout,
+        # stderr=sys.stderr
         # preexec_fn=os.setsid
     )
     pro.daemon = 1  # daemon necessary so game shuts down if this script is shut down by user
@@ -82,8 +82,8 @@ def terminate_single_game(process):
 class TerminalEnv(gym.Env, rpyc.Service):
 
     def __init__(self):
-        self.set_log_level_by(3)
         super(TerminalEnv, self).__init__()
+        self.set_log_level_by(3)
         self.process = None
 
         # write down port for the rest of the execution

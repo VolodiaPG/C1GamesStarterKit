@@ -57,7 +57,8 @@ MEMORY = Memory()
 
 class Middleware(rpyc.Service):
     def __init__(self):
-        self.set_log_level_by(3, "middleware.log")
+        # self.set_log_level_by(3, "middleware.log")
+        self.set_log_level_by(3)
 
     def on_connect(self, conn):
         """
@@ -108,7 +109,7 @@ class Middleware(rpyc.Service):
         MEMORY.set_done(False)
         return ret
 
-    def set_log_level_by(self, verbosity, filename):
+    def set_log_level_by(self, verbosity, filename=None):
         """Set log level by verbosity level.
         verbosity vs log level:
             0 -> logging.ERROR
@@ -133,15 +134,18 @@ class Middleware(rpyc.Service):
         logger.setLevel(level)
         if len(logger.handlers):
             handler = logger.handlers[0]
-            fh = logger.handlers[1]
+            if filename is not None:
+                fh = logger.handlers[1]
         else:
             handler = logging.StreamHandler()
             logger.addHandler(handler)
-            fh = logging.FileHandler(filename)
-            logger.addHandler(fh)
+            if filename is not None:
+                fh = logging.FileHandler(filename)
+                logger.addHandler(fh)
 
         handler.setLevel(level)
         handler.setFormatter(LOG_FMT)
-        fh.setLevel(level)
-        fh.setFormatter(LOG_FMT)
+        if filename is not None:
+            fh.setLevel(level)
+            fh.setFormatter(LOG_FMT)
         return level
