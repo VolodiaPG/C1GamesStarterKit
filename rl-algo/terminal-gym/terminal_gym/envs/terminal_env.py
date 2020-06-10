@@ -167,6 +167,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         """
         logging.info("Start run a match")
         logging.debug(f"Running {COMMAND_SINGLE_GAME}")
+        print("QSDFHJSDFIQHSDIFSDQFHISFHHSDIFHOIH")
 
 
         # def run_in_thread(on_exit_fn, pro):
