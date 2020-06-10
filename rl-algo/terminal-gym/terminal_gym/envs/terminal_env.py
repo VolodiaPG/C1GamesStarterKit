@@ -22,24 +22,6 @@ HOSTNAME = ""
 
 DELAY = 0.05  # seconds
 
-is_windows = sys.platform.startswith('win')
-print("You are running a windows machine") if is_windows else print("You are running a linux machine")
-# Get location of this run file
-file_dir = os.path.dirname(os.path.realpath(__file__))
-parent_dir = os.path.join(file_dir, os.pardir)
-parent_dir = os.path.join(parent_dir, os.pardir)
-parent_dir = os.path.join(parent_dir, os.pardir)
-parent_dir = os.path.join(parent_dir, os.pardir)
-parent_dir = os.path.abspath(parent_dir)
-file_dir = os.path.abspath(file_dir)
-
-print(f"Will look under {file_dir} for interesting files")
-
-ALGO1 = file_dir
-ALGO2 = parent_dir + ("\\simple-algo" if is_windows else '/simple-algo')
-
-COMMAND_SINGLE_GAME = f'cd {parent_dir} && .\\scripts\\run_match.ps1 {ALGO1} {ALGO2}' if is_windows else f'cd {parent_dir} && ./scripts/run_match.sh {ALGO1} {ALGO2}'
-
 LINE_SIZE: int = 14
 MAP_SIZE: int = 27 * LINE_SIZE
 NUM_DIFFERENT_UNIT_TYPES: int = 6
@@ -168,6 +150,25 @@ class TerminalEnv(gym.Env, rpyc.Service):
         on_exit when the instance finishes
         returns the subprocess process
         """
+
+        is_windows = sys.platform.startswith('win')
+        print("You are running a windows machine") if is_windows else print("You are running a linux machine")
+        # Get location of this run file
+        file_dir = os.path.dirname(os.path.realpath(__file__))
+        parent_dir = os.path.join(file_dir, os.pardir)
+        parent_dir = os.path.join(parent_dir, os.pardir)
+        parent_dir = os.path.join(parent_dir, os.pardir)
+        parent_dir = os.path.join(parent_dir, os.pardir)
+        parent_dir = os.path.abspath(parent_dir)
+        file_dir = os.path.abspath(file_dir)
+
+        print(f"Will look under {file_dir} for interesting files")
+
+        ALGO1 = file_dir
+        ALGO2 = parent_dir + ("\\simple-algo" if is_windows else '/simple-algo')
+
+        COMMAND_SINGLE_GAME = f'cd {parent_dir} && .\\scripts\\run_match.ps1 {ALGO1} {ALGO2}' if is_windows else f'cd {parent_dir} && ./scripts/run_match.sh {ALGO1} {ALGO2}'
+
         logging.info("Start running a match")
         logging.debug(f"Running {COMMAND_SINGLE_GAME}")
         print("QSDFHJSDFIQHSDIFSDQFHISFHHSDIFHOIH")
