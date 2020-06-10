@@ -14,7 +14,7 @@ LOG_FMT = logging.Formatter('%(levelname)s '
                             '[%(filename)s:%(lineno)d] %(message)s',
                             '%Y-%m-%d %H:%M:%S')
 
-PORT = 42224  # port to communicate with the game playing throught the java program
+PORT = 18519  # port to communicate with the game playing throught the java program
 HOSTNAME = "127.0.0.1"
 DELAY = 0.05  # seconds
 
@@ -61,9 +61,9 @@ def run_single_game():
 
     pro = subprocess.Popen(
         COMMAND_SINGLE_GAME,
-        # shell=True,
-        # stdout=sys.stdout,
-        # stderr=sys.stderr,
+        shell=True,
+        stdout=sys.stdout,
+        stderr=sys.stderr,
         # preexec_fn=os.setsid
     )
     pro.daemon = 1  # daemon necessary so game shuts down if this script is shut down by user
