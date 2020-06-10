@@ -92,7 +92,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         f.write(str(PORT))
         f.close()
 
-        print(f'Main port is: {PORT}')
+        logging.info(f'Main port is: {PORT}')
         self.server = threading.Thread(target=lambda: rpyc.ThreadedServer(Middleware(), port=PORT).start(), daemon=True)
         self.server.start()
         self.conn = None
