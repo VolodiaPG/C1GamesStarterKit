@@ -16,7 +16,7 @@ LOG_FMT = logging.Formatter('%(levelname)s '
 
 PORT = 42224  # port to communicate with the game playing throught the java program
 HOSTNAME = "127.0.0.1"
-DELAY = 0.5  # seconds
+DELAY = 0.05  # seconds
 
 is_windows = sys.platform.startswith('win')
 # Get location of this run file
@@ -64,7 +64,7 @@ def run_single_game():
         shell=True,
         stdout=sys.stdout,
         stderr=sys.stderr,
-        preexec_fn=os.setsid
+        # preexec_fn=os.setsid
     )
     pro.daemon = 1  # daemon necessary so game shuts down if this script is shut down by user
     # thread = threading.Thread(target=run_in_thread, args=(on_exit_fn, pro))
@@ -74,7 +74,8 @@ def run_single_game():
 
 def terminate_single_game(process):
     logging.info('manually killing a subprocess')
-    os.kill(os.getpgid(process.pid), signal.SIGTERM)  # send the signal to all the process in the group
+    process.kill()
+    # os.kill(os.getpgid(process.pid), signal.SIGTERM)  # send the signal to all the process in the group
 
 
 class TerminalEnv(gym.Env, rpyc.Service):
