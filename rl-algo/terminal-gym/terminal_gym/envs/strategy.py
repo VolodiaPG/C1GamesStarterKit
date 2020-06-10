@@ -4,9 +4,8 @@ import json
 from terminal_gym.envs import gamelib
 import rpyc
 import time
-from terminal_env import PORT as PORT
-
-DELAY = 0.1
+from terminal_env import PORT
+from terminal_env import DELAY
 
 """
 Most of the algo code you write will be in this file unless you create new

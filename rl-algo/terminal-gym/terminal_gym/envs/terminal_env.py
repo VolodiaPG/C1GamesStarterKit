@@ -16,6 +16,7 @@ LOG_FMT = logging.Formatter('%(levelname)s '
 
 PORT = 42224  # port to communicate with the game playing throught the java program
 HOSTNAME = "127.0.0.1"
+DELAY = 0.5  # seconds
 
 is_windows = sys.platform.startswith('win')
 # Get location of this run file
@@ -41,7 +42,6 @@ NO_REWARD = 0
 WIN_REWARD = 1
 LOSS_REWARD = -1
 
-DELAY = 0.1
 
 
 def run_single_game():
