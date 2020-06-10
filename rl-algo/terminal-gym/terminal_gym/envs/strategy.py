@@ -4,7 +4,7 @@ import json
 from terminal_gym.envs import gamelib
 import rpyc
 import time
-from terminal_env import DELAY, PORT_CONFIG_FILE
+from terminal_env import DELAY, PORT_CONFIG_FILE, HOSTNAME
 
 PORT = 0
 
@@ -67,7 +67,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         # This is a good place to do initial setup
         # self.scored_on_locations = []
 
-        self.conn = rpyc.connect("127.0.0.1", PORT)
+        self.conn = rpyc.connect(HOSTNAME, PORT)
         assert self.conn is not None
         gamelib.debug_write("Connected to middleware!")
 

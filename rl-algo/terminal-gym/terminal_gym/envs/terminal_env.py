@@ -16,7 +16,7 @@ LOG_FMT = logging.Formatter('%(levelname)s '
 PORT_CONFIG_FILE = '/tmp/C1GamesStarterKitPort.conf'
 PORT = 0
 
-HOSTNAME = "127.0.0.1"
+HOSTNAME = "::"
 DELAY = 0.05  # seconds
 
 is_windows = sys.platform.startswith('win')
