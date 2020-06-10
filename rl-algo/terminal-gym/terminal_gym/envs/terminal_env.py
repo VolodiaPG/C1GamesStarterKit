@@ -66,8 +66,8 @@ def run_single_game():
     pro = subprocess.Popen(
         COMMAND_SINGLE_GAME,
         shell=True,
-        # stdout=sys.stdout,
-        # stderr=sys.stderr
+        stdout=sys.stdout,
+        stderr=sys.stderr
         # preexec_fn=os.setsid
     )
     pro.daemon = 1  # daemon necessary so game shuts down if this script is shut down by user
