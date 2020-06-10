@@ -103,8 +103,6 @@ class TerminalEnv(gym.Env, rpyc.Service):
         f.write(HOSTNAME)
         f.close()
 
-        logging.info(f'Server will be hosted at: {HOSTNAME}:{PORT}')
-
         self.server = threading.Thread(target=lambda: rpyc.ThreadedServer(Middleware(), port=PORT).start(), daemon=True)
         self.server.start()
         self.conn = None
@@ -118,6 +116,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
 
         # self.seed()
         logging.info('Environment initialized')
+        logging.info(f'Server will be hosted at: {HOSTNAME}:{PORT}')
 
     def step(self, action: int):
         # self.conn.root.add_movement(action)
