@@ -103,7 +103,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         f.write(HOSTNAME)
         f.close()
 
-        logging.info(f'Main port is: {PORT}')
+        logging.info(f'Server will be hosted at: {HOSTNAME}:{PORT}')
 
         self.server = threading.Thread(target=lambda: rpyc.ThreadedServer(Middleware(), port=PORT).start(), daemon=True)
         self.server.start()
