@@ -14,8 +14,8 @@ LOG_FMT = logging.Formatter('%(levelname)s '
                             '[%(filename)s:%(lineno)d] %(message)s',
                             '%Y-%m-%d %H:%M:%S')
 
-PORT = 4242  # port to communicate with the game playing throught the java program
-HOSTNAME = "localhost"
+PORT = 42224  # port to communicate with the game playing throught the java program
+HOSTNAME = "127.0.0.1"
 
 is_windows = sys.platform.startswith('win')
 # Get location of this run file
@@ -35,7 +35,7 @@ print(COMMAND_SINGLE_GAME)
 
 LINE_SIZE: int = 14
 MAP_SIZE: int = 27 * LINE_SIZE
-NUM_DIFFERENT_UNIT_TYPES = 6
+NUM_DIFFERENT_UNIT_TYPES: int = 6
 
 NO_REWARD = 0
 WIN_REWARD = 1
@@ -83,7 +83,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         super(TerminalEnv, self).__init__()
         self.process = None
 
-        self.server = threading.Thread(target=lambda: rpyc.ThreadedServer(Middleware(), port=4242).start(), daemon=True)
+        self.server = threading.Thread(target=lambda: rpyc.ThreadedServer(Middleware(), port=PORT).start(), daemon=True)
         self.server.start()
         self.conn = None
 
