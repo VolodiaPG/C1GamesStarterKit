@@ -98,7 +98,8 @@ class TerminalEnv(gym.Env, rpyc.Service):
 
         global HOSTNAME
         hostname = socket.gethostname()
-        HOSTNAME = socket.gethostbyname(hostname)
+        # HOSTNAME = socket.gethostbyname(hostname)
+        HOSTNAME = 'localhost'
         f = open(HOST_CONFIG_FILE, 'w')
         f.write(HOSTNAME)
         f.close()
