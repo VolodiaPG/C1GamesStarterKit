@@ -168,6 +168,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         logging.info("Start run a match")
         logging.debug(f"Running {COMMAND_SINGLE_GAME}")
 
+
         # def run_in_thread(on_exit_fn, pro):
         #     # daemon necessary so game shuts down if this script is shut down by user
         #     pro.daemon = 1
@@ -185,6 +186,7 @@ class TerminalEnv(gym.Env, rpyc.Service):
         pro.daemon = 1  # daemon necessary so game shuts down if this script is shut down by user
         # thread = threading.Thread(target=run_in_thread, args=(on_exit_fn, pro))
         # thread.start()
+        logging.debug('The subprocess has been started')
         return pro
 
     def terminate_single_game(self, process):
